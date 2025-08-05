@@ -125,13 +125,10 @@ class _PictureGridState extends State<PictureGrid> {
           },
         );
       },
-    ).whenComplete(() {
-      _discoveryTimer?.cancel();
-      _mediaCastDlna.stopDiscovery();
-    });
+    );
   }
 
-  void _castPicture(String pictureFileName) {
+  void _castPicture(String pictureFileName) async {
     if (_connectedDevice.value == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a device first.')),
@@ -143,12 +140,19 @@ class _PictureGridState extends State<PictureGrid> {
     final metadata = ImageMetadata(
         title: pictureFileName, upnpClass: 'object.item.imageItem');
 
-    _mediaCastDlna.setMediaUri(_connectedDevice.value!.udn, Url(value: imageUrl), metadata);
-    _mediaCastDlna.play(_connectedDevice.value!.udn);
+    try {
+      await _mediaCastDlna.setMediaUri(_connectedDevice.value!.udn, Url(value: imageUrl), metadata);
+      await _mediaCastDlna.play(_connectedDevice.value!.udn);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Casting $pictureFileName...')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Casting $pictureFileName...'))
+      );
+    } catch (e) {
+      print('Error casting picture: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error casting $pictureFileName: $e'))
+      );
+    }
   }
 
   @override
@@ -219,6 +223,7 @@ class _PictureGridState extends State<PictureGrid> {
                     itemCount: pictures.length,
                     itemBuilder: (context, index) {
                       final imageUrl = '$serverUrl/pictures/${pictures[index]}';
+                      print('Attempting to load image from URL: $imageUrl');
                       return GestureDetector(
                         onTap: () => _castPicture(pictures[index]),
                         child: GridTile(
@@ -230,6 +235,8 @@ class _PictureGridState extends State<PictureGrid> {
                               return const Center(child: CircularProgressIndicator());
                             },
                             errorBuilder: (context, error, stackTrace) {
+                              print('Error loading image: $error');
+                              print(stackTrace);
                               return const Icon(Icons.broken_image, size: 50, color: Colors.redAccent);
                             },
                           ),
@@ -260,17 +267,24 @@ class _DeviceListDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Building _DeviceListDialog...');
     return AlertDialog(
-      title: const Text('Select a device'),
+      title: const Text('Select a Device'),
       content: SizedBox(
         width: double.maxFinite,
         child: ValueListenableBuilder<List<DlnaDevice>>(
           valueListenable: devicesNotifier,
           builder: (context, devices, child) {
-            print('_DeviceListDialog ValueListenableBuilder rebuilding with ${devices.length} devices.');
             if (devices.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Searching for devices...'),
+                  ],
+                ),
+              );
             }
             return ListView.builder(
               shrinkWrap: true,
@@ -278,8 +292,8 @@ class _DeviceListDialog extends StatelessWidget {
               itemBuilder: (context, index) {
                 final device = devices[index];
                 return ListTile(
-                  title: Text(device.friendlyName),
-                  subtitle: Text(device.deviceType ?? 'Unknown Device Type'),
+                  title: Text(device.friendlyName ?? 'Unknown Device'),
+                  subtitle: Text(device.udn.value),
                   onTap: () {
                     onDeviceSelected(device);
                     Navigator.of(context).pop();
