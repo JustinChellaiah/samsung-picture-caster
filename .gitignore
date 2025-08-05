@@ -1,0 +1,67 @@
+# Generic
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+
+# Flutter
+# See https://flutter.dev/docs/development/tools/flutter-cli#create
+
+# General
+.idea/
+.vscode/
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Android
+/android/app/src/main/assets/flutter_assets/
+/android/app/build/
+/android/build/
+/android/.gradle/
+/android/key.properties
+/android/local.properties
+
+# iOS
+/ios/Pods/
+/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-*
+/ios/Runner.xcworkspace/contents.xcworkspacedata
+/ios/Runner.xcworkspace/xcshareddata/
+/ios/Runner.xcodeproj/project.xcworkspace/
+/ios/Runner.xcodeproj/xcshareddata/
+/ios/Flutter/App.framework
+/ios/Flutter/engine.version
+/ios/Flutter/flutter_assets/
+/ios/Flutter/Generated.xcconfig
+/ios/Flutter/info.plist
+/ios/Flutter/flutter_export_environment.sh
+
+# Web
+/web/build/
+
+# Windows
+/windows/build/
+/windows/flutter/ephemeral/
+/windows/runner/Debug/
+/windows/runner/Profile/
+/windows/runner/Release/
+
+# Linux
+/linux/build/
+/linux/flutter/ephemeral/
+
+# macOS
+/macos/build/
+/macos/Flutter/ephemeral/
