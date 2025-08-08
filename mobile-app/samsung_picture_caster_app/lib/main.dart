@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:media_cast_dlna/media_cast_dlna.dart';
 
@@ -141,9 +142,21 @@ class _PictureGridState extends State<PictureGrid> {
         title: pictureFileName, upnpClass: 'object.item.imageItem');
 
     try {
-      await _mediaCastDlna.setMediaUri(_connectedDevice.value!.udn, Url(value: imageUrl), metadata);
-      await _mediaCastDlna.play(_connectedDevice.value!.udn);
-
+      await Future.delayed(const Duration(seconds: 1));
+      try {
+        await _mediaCastDlna.setMediaUri(_connectedDevice.value!.udn, Url(value: imageUrl), metadata);
+        await _mediaCastDlna.play(_connectedDevice.value!.udn);
+      } on PlatformException catch (e) {
+        debugPrint('Error casting picture: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error casting: ${e.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Casting $pictureFileName...'))
       );
